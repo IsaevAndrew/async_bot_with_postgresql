@@ -1,0 +1,7 @@
+aiogram==2.25.1
+phonenumbers==8.13.18
+greenlet
+SQLAlchemy
+sqlalchemy
+asyncpg
+pyrogram
