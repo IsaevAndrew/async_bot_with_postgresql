@@ -3,9 +3,10 @@ import re
 
 import phonenumbers
 from aiogram.types import InputFile, ContentType
-from pyrogram import Client
+from pyrogram import Client, filters
 
-from consts import API_ID, API_HASH, HYGGE_PAINT_CHANNEL
+from consts import API_ID, API_HASH, HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL, \
+    ARTSIMPLE_CHANNEL
 
 from consts import TOKEN, videos
 
@@ -18,12 +19,13 @@ import keyboards
 from db.base import Base
 from db.engine import create_async_engine, get_session_maker, proceed_schema
 from db.user import User, get_or_create_user, update_user_info, \
-    check_registration_status, check_agrees_to_video, update_agrees_to_video
+    check_registration_status, check_agrees_to_video, update_agrees_to_video, \
+    get_users_agreeing_to_video
 
 memory = MemoryStorage()
 bot = Bot(TOKEN)
 dp = Dispatcher(bot=bot, storage=memory)
-
+app = Client("SURGAZ", api_id=API_ID, api_hash=API_HASH)
 session_maker = None
 
 
@@ -37,7 +39,25 @@ async def init_db():
 
 async def on_startup(_):
     await init_db()
+    await app.start()
     print("Бот успешно запущен!!")
+
+
+@app.on_message(filters=filters.channel)
+async def main(client, message):
+    if message.chat.id in [HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL,
+                           ARTSIMPLE_CHANNEL, -1001950367322]:
+        if (message.caption and "#surgaz_видео" in message.caption) or (
+                message.text and "#surgaz_видео" in message.text):
+            users = await get_users_agreeing_to_video(
+                session_maker=session_maker)
+            for user in users:
+                try:
+                    await bot.forward_message(user, message.chat.id, message.id)
+                except Exception as e:
+                    print(e)
+    else:
+        return
 
 
 @dp.message_handler(commands=['start'])
@@ -81,9 +101,9 @@ async def new_videos(call: types.CallbackQuery):
         await update_agrees_to_video(user_id=call.message.chat.id,
                                      session_maker=session_maker)
     message_id = await get_last_video()
-    # await bot.forward_message(chat_id=call.message.chat.id,
-    #                           from_chat_id=HYGGE_PAINT_CHANNEL,
-    #                           message_id=message_id)
+    await bot.forward_message(chat_id=call.message.chat.id,
+                              from_chat_id=HYGGE_PAINT_CHANNEL,
+                              message_id=message_id)
     await call.message.answer(texts.videos, reply_markup=keyboards.videos,
                               parse_mode="HTML")
 
@@ -133,12 +153,141 @@ async def main_paints(call: types.CallbackQuery):
 
 class Quiz(StatesGroup):
     what = State()
+    requirements = State()
+    matte = State()
 
 
 @dp.callback_query_handler(text="quiz")
 async def quiz(call: types.CallbackQuery):
     await call.message.answer(texts.quiz_message, parse_mode="HTML",
                               reply_markup=keyboards.quiz_first)
+    await Quiz.what.set()
+
+
+@dp.callback_query_handler(state=Quiz.what, text="out")
+async def out_home(call: types.CallbackQuery):
+    await call.message.answer(
+        "Какие требования к фасадной матовой краске с 7% блеска?",
+        reply_markup=keyboards.quiz_out)
+    await Quiz.next()
+
+
+@dp.callback_query_handler(state=Quiz.what, text="in")
+async def in_home(call: types.CallbackQuery):
+    await call.message.answer(
+        "Какие требования к краске?",
+        reply_markup=keyboards.quiz_out)
+    await Quiz.next()
+
+
+@dp.callback_query_handler(state=Quiz.requirements, text="1")
+async def requirement_1(call: types.CallbackQuery, state: FSMContext):
+    await call.message.answer("Вам подходят краски:")
+    await call.message.answer_photo("./photos/Sapphire.png",
+                                    caption=texts.sapphire)
+    await call.message.answer_photo(
+        photo=types.InputMediaPhoto('./photos/Snefald.png'),
+        caption=texts.snefald)
+    await state.finish()
+
+
+@dp.callback_query_handler(state=Quiz.requirements, text="2")
+async def requirement_2(call: types.CallbackQuery, state: FSMContext):
+    await call.message.answer("Вам больше всего подходит краска:")
+    await call.message.answer_photo("./photos/Sapphire.png",
+                                    caption=texts.sapphire)
+    await call.message.answer("Вам также подходит краска:")
+    await call.message.answer_photo(
+        photo=types.InputMediaPhoto('./photos/Snefald.png'),
+        caption=texts.snefald)
+    await state.finish()
+
+
+@dp.callback_query_handler(state=Quiz.requirements)
+async def requirement_in(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data["requirement_text"] = call.data
+    await call.message.answer(
+        "С какой степенью матовости Вы бы хотели приобрести краску?",
+        keyboards.matte)
+    await Quiz.next()
+
+
+@dp.callback_query_handler(state=Quiz.matte, text="20")
+async def matte20(call: types.CallbackQuery, state: FSMContext):
+    await call.message.answer("Вам больше всего подходит краска:")
+    await call.message.answer_photo(
+        photo=types.InputMediaPhoto('./photos/Snefald.png'),
+        caption=texts.snefald)
+    await call.message.answer("Вам также подходит краска:")
+    await call.message.answer_photo(
+        photo=types.InputMediaPhoto('./photos/Shimmering sea.png'),
+        caption=texts.shimmering_sea)
+    await state.finish()
+
+
+@dp.callback_query_handler(state=Quiz.matte, text="3")
+async def matte3(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        if data["requirement_text"] in ["metal", "wood", "dry"]:
+            await call.message.answer("Вам больше всего подходят краски:")
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Snefald.png'),
+                caption=texts.snefald)
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Silverbloom.png'),
+                caption=texts.silverbloom)
+        else:
+            await call.message.answer("Вам больше всего подходит краска:")
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Snefald.png'),
+                caption=texts.snefald)
+        if data["requirement_text"] == "wet":
+            await call.message.answer("Вам также подходят краски:")
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Shimmering sea.png'),
+                caption=texts.shimmering_sea)
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Aster.png'),
+                caption=texts.aster)
+    await state.finish()
+
+
+@dp.callback_query_handler(state=Quiz.matte, text="7")
+async def matte7(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        if data["requirement_text"] == "dry":
+            await call.message.answer("Вам больше всего подходят краски:")
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Snefald.png'),
+                caption=texts.snefald)
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
+                caption=texts.fleurs)
+        else:
+            await call.message.answer("Вам больше всего подходит краска:")
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Snefald.png'),
+                caption=texts.snefald)
+        if data["requirement_text"] in ["temp", "dry"]:
+            await call.message.answer("Вам также подходит краска:")
+        else:
+            await call.message.answer("Вам также подходят краски:")
+        await call.message.answer_photo(
+            photo=types.InputMediaPhoto('./photos/Obsidian.png'),
+            caption=texts.obsidian)
+        if data["requirement_text"] == "metal":
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
+                caption=texts.fleurs)
+        elif data["requirement_text"] in ["wood", "wet"]:
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
+                caption=texts.fleurs)
+            await call.message.answer_photo(
+                photo=types.InputMediaPhoto('./photos/Klover.png'),
+                caption=texts.klover)
+    await state.finish()
 
 
 @dp.callback_query_handler(text="main_wallpaper")

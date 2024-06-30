@@ -87,3 +87,12 @@ async def update_agrees_to_video(user_id: int,
             if user:
                 user.agrees_to_video = True
                 await session.commit()
+
+
+async def get_users_agreeing_to_video(session_maker: sessionmaker) -> list:
+    async with session_maker() as session:
+        async with session.begin():
+            stmt = select(User.user_id).where(User.agrees_to_video == True)
+            result = await session.execute(stmt)
+            user_ids = [user_id for (user_id,) in result.fetchall()]
+            return user_ids

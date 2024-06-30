@@ -78,6 +78,33 @@ quiz_first = InlineKeyboardMarkup()
 quiz_first.add(InlineKeyboardButton("Для интерьера", callback_data="in")).add(
     InlineKeyboardButton("Для экстерьера", callback_data="out"))
 
+quiz_in = InlineKeyboardMarkup()
+quiz_in.add(InlineKeyboardButton("Устойчивость к высоким температурам",
+                                 callback_data="temp")).add(
+    InlineKeyboardButton("Для металлических поверхностей",
+                         callback_data="metal")).add(
+    InlineKeyboardButton("Для деревянных поверхностей",
+                         callback_data="wood")).add(
+    InlineKeyboardButton("Для сухих поверхностей", callback_data="wet")).add(
+    InlineKeyboardButton("Для влажных поверхностей", callback_data="dry"))
+
+quiz_out = InlineKeyboardMarkup()
+quiz_out.add(InlineKeyboardButton("Для стен и кровли", callback_data="1")).add(
+    InlineKeyboardButton("Устойчивость к высоким температурам",
+                         callback_data="2")).add(
+    InlineKeyboardButton("Для металлических поверхностей",
+                         callback_data="2")).add(
+    InlineKeyboardButton("Для деревянных поверхностей",
+                         callback_data="2")).add(
+    InlineKeyboardButton("Для сухих поверхностей", callback_data="1")).add(
+    InlineKeyboardButton("Для влажных поверхностей", callback_data="1"))
+
+matte = InlineKeyboardMarkup()
+matte.add(
+    InlineKeyboardButton("Глубокоматовая 3% блеска", callback_data="3")).add(
+    InlineKeyboardButton("Матовая 7% блеска", callback_data="7")).add(
+    InlineKeyboardButton("Полуматовая 20 % блеска", callback_data="20"))
+
 wallpapers_main = InlineKeyboardMarkup()
 wallpapers_main.add(InlineKeyboardButton("Стать оптовым партнёром",
                                          callback_data="oboi_partner")).add(
