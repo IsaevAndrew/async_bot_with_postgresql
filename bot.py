@@ -46,14 +46,15 @@ async def on_startup(_):
 @app.on_message(filters=filters.channel)
 async def main(client, message):
     if message.chat.id in [HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL,
-                           ARTSIMPLE_CHANNEL, -1001950367322]:
+                           ARTSIMPLE_CHANNEL]:
         if (message.caption and "#surgaz_видео" in message.caption) or (
                 message.text and "#surgaz_видео" in message.text):
             users = await get_users_agreeing_to_video(
                 session_maker=session_maker)
             for user in users:
                 try:
-                    await bot.forward_message(user, message.chat.id, message.id)
+                    await bot.forward_message(user, message.chat.id,
+                                              message.id)
                 except Exception as e:
                     print(e)
     else:
