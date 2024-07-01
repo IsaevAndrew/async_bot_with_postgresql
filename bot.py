@@ -184,23 +184,25 @@ async def in_home(call: types.CallbackQuery):
 @dp.callback_query_handler(state=Quiz.requirements, text="1")
 async def requirement_1(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer("Вам подходят краски:")
-    await call.message.answer_photo("./photos/Sapphire.png",
-                                    caption=texts.sapphire)
     await call.message.answer_photo(
-        photo=types.InputMediaPhoto('./photos/Snefald.png'),
-        caption=texts.snefald)
+        photo=types.InputFile("./photos/Sapphire.png"),
+        caption=texts.sapphire, parse_mode="HTML")
+    await call.message.answer_photo(
+        photo=types.InputFile('./photos/Snefald.png'),
+        caption=texts.snefald, parse_mode="HTML")
     await state.finish()
 
 
 @dp.callback_query_handler(state=Quiz.requirements, text="2")
 async def requirement_2(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer("Вам больше всего подходит краска:")
-    await call.message.answer_photo("./photos/Sapphire.png",
-                                    caption=texts.sapphire)
+    await call.message.answer_photo(
+        photo=types.InputFile("./photos/Sapphire.png"),
+        caption=texts.sapphire, parse_mode="HTML")
     await call.message.answer("Вам также подходит краска:")
     await call.message.answer_photo(
-        photo=types.InputMediaPhoto('./photos/Snefald.png'),
-        caption=texts.snefald)
+        photo=types.InputFile('./photos/Snefald.png'),
+        caption=texts.snefald, parse_mode="HTML")
     await state.finish()
 
 
@@ -218,12 +220,12 @@ async def requirement_in(call: types.CallbackQuery, state: FSMContext):
 async def matte20(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer("Вам больше всего подходит краска:")
     await call.message.answer_photo(
-        photo=types.InputMediaPhoto('./photos/Snefald.png'),
-        caption=texts.snefald)
+        photo=types.InputFile('./photos/Snefald.png'),
+        caption=texts.snefald, parse_mode="HTML")
     await call.message.answer("Вам также подходит краска:")
     await call.message.answer_photo(
-        photo=types.InputMediaPhoto('./photos/Shimmering sea.png'),
-        caption=texts.shimmering_sea)
+        photo=types.InputFile('./photos/Shimmering sea.png'),
+        caption=texts.shimmering_sea, parse_mode="HTML")
     await state.finish()
 
 
@@ -233,24 +235,24 @@ async def matte3(call: types.CallbackQuery, state: FSMContext):
         if data["requirement_text"] in ["metal", "wood", "dry"]:
             await call.message.answer("Вам больше всего подходят краски:")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Snefald.png'),
-                caption=texts.snefald)
+                photo=types.InputFile('./photos/Snefald.png'),
+                caption=texts.snefald, parse_mode="HTML")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Silverbloom.png'),
-                caption=texts.silverbloom)
+                photo=types.InputFile('./photos/Silverbloom.png'),
+                caption=texts.silverbloom, parse_mode="HTML")
         else:
             await call.message.answer("Вам больше всего подходит краска:")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Snefald.png'),
-                caption=texts.snefald)
+                photo=types.InputFile('./photos/Snefald.png'),
+                caption=texts.snefald, parse_mode="HTML")
         if data["requirement_text"] == "wet":
             await call.message.answer("Вам также подходят краски:")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Shimmering sea.png'),
-                caption=texts.shimmering_sea)
+                photo=types.InputFile('./photos/Shimmering sea.png'),
+                caption=texts.shimmering_sea, parse_mode="HTML")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Aster.png'),
-                caption=texts.aster)
+                photo=types.InputFile('./photos/Aster.png'),
+                caption=texts.aster, parse_mode="HTML")
     await state.finish()
 
 
@@ -260,34 +262,34 @@ async def matte7(call: types.CallbackQuery, state: FSMContext):
         if data["requirement_text"] == "dry":
             await call.message.answer("Вам больше всего подходят краски:")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Snefald.png'),
-                caption=texts.snefald)
+                photo=types.InputFile('./photos/Snefald.png'),
+                caption=texts.snefald, parse_mode="HTML")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
-                caption=texts.fleurs)
+                photo=types.InputFile('./photos/Fleurs.png'),
+                caption=texts.fleurs, parse_mode="HTML")
         else:
             await call.message.answer("Вам больше всего подходит краска:")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Snefald.png'),
-                caption=texts.snefald)
+                photo=types.InputFile('./photos/Snefald.png'),
+                caption=texts.snefald, parse_mode="HTML")
         if data["requirement_text"] in ["temp", "dry"]:
             await call.message.answer("Вам также подходит краска:")
         else:
             await call.message.answer("Вам также подходят краски:")
         await call.message.answer_photo(
-            photo=types.InputMediaPhoto('./photos/Obsidian.png'),
-            caption=texts.obsidian)
+            photo=types.InputFile('./photos/Obsidian.png'),
+            caption=texts.obsidian, parse_mode="HTML")
         if data["requirement_text"] == "metal":
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
-                caption=texts.fleurs)
+                photo=types.InputFile('./photos/Fleurs.png'),
+                caption=texts.fleurs, parse_mode="HTML")
         elif data["requirement_text"] in ["wood", "wet"]:
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Fleurs.png'),
-                caption=texts.fleurs)
+                photo=types.InputFile('./photos/Fleurs.png'),
+                caption=texts.fleurs, parse_mode="HTML")
             await call.message.answer_photo(
-                photo=types.InputMediaPhoto('./photos/Klover.png'),
-                caption=texts.klover)
+                photo=types.InputFile('./photos/Klover.png'),
+                caption=texts.klover, parse_mode="HTML")
     await state.finish()
 
 
