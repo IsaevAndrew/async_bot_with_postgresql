@@ -40,11 +40,11 @@ async def init_db():
 async def on_startup(_):
     await init_db()
     await app.start()
-    print("Бот успешно запущен!!")
+    print("Бот успешно запущен!")
 
 
 @app.on_message(filters=filters.channel)
-async def main(client, message):
+async def main_parser(client, message):
     if message.chat.id in [HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL,
                            ARTSIMPLE_CHANNEL]:
         if (message.caption and "#surgaz_видео" in message.caption) or (
@@ -66,7 +66,7 @@ async def welcome(message: types.Message):
     user_id = message.from_user.id
     name = message.from_user.username if message.from_user.username else '-'
     await get_or_create_user(user_id, name, session_maker=session_maker)
-    await message.answer_video(video=videos["wallpaper"],
+    await message.answer_video(video=videos["main"],
                                caption=texts.welcome_message,
                                reply_markup=keyboards.main,
                                parse_mode="HTML")
@@ -81,7 +81,7 @@ async def retail(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="main")
 async def main_callback(call: types.CallbackQuery):
-    await call.message.answer_video(video=videos["wallpaper"],
+    await call.message.answer_video(video=videos["main"],
                                     caption=texts.welcome_message,
                                     reply_markup=keyboards.main,
                                     parse_mode="HTML")
@@ -111,7 +111,7 @@ async def new_videos(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="partner")
 async def partner(call: types.CallbackQuery):
-    await call.message.answer_video(video=videos["wallpaper"],
+    await call.message.answer_video(video=videos["main"],
                                     caption=texts.partner_message,
                                     reply_markup=keyboards.partner,
                                     parse_mode="HTML")
@@ -191,6 +191,7 @@ async def requirement_1(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Snefald.png'),
         caption=texts.snefald, parse_mode="HTML")
     await state.finish()
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(state=Quiz.requirements, text="2")
@@ -204,6 +205,8 @@ async def requirement_2(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Snefald.png'),
         caption=texts.snefald, parse_mode="HTML")
     await state.finish()
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
+
 
 
 @dp.callback_query_handler(state=Quiz.requirements)
@@ -227,6 +230,8 @@ async def matte20(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Shimmering sea.png'),
         caption=texts.shimmering_sea, parse_mode="HTML")
     await state.finish()
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
+
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="3")
@@ -254,6 +259,8 @@ async def matte3(call: types.CallbackQuery, state: FSMContext):
                 photo=types.InputFile('./photos/Aster.png'),
                 caption=texts.aster, parse_mode="HTML")
     await state.finish()
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
+
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="7")
@@ -291,6 +298,8 @@ async def matte7(call: types.CallbackQuery, state: FSMContext):
                 photo=types.InputFile('./photos/Klover.png'),
                 caption=texts.klover, parse_mode="HTML")
     await state.finish()
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
+
 
 
 @dp.callback_query_handler(text="main_wallpaper")
@@ -319,12 +328,20 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="oboi_katalog")
 async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
-    await Consulting.agree.set()
-    await call.message.answer(texts.consultation_message,
-                              reply_markup=keyboards.yes_no,
-                              parse_mode="HTML")
     async with state.proxy() as data:
         data["teg"] = "oboi_katalog"
+        if await check_registration_status(call.message.chat.id,
+                                           session_maker=session_maker):
+            await call.message.answer(
+                "Персональный менеджер свяжется с Вами в течении 30 мин.",
+                reply_markup=keyboards.back_main)
+            # TODO передавать в crm
+        else:
+            await Consulting.agree.set()
+            await call.message.answer(texts.consultation_message,
+                                  reply_markup=keyboards.yes_no,
+                                  parse_mode="HTML")
+
 
 
 @dp.callback_query_handler(text="oboi_mobile")
@@ -487,7 +504,7 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Consulting.agree, text="no")
 async def no_agree(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer_video(video=videos["wallpaper"],
+    await call.message.answer_video(video=videos["main"],
                                     caption=texts.welcome_message,
                                     reply_markup=keyboards.main,
                                     parse_mode="HTML")

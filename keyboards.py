@@ -27,7 +27,7 @@ videos.row(
     InlineKeyboardButton("HYGGE Paint в Телеграм",
                          url="https://t.me/hyggepaint"),
     InlineKeyboardButton("SURGAZ в Телеграм",
-                         url="https://t.me/surgazt")).row(
+                         url="https://t.me/surgaz")).row(
     InlineKeyboardButton("Вернуться в меню", callback_data="main"))
 
 partner = InlineKeyboardMarkup()
@@ -118,7 +118,7 @@ wallpapers_main.add(InlineKeyboardButton("Стать оптовым партнё
     InlineKeyboardButton("Вступить в группу в VK",
                          url="https://vk.com/surgaz")).add(
     InlineKeyboardButton("SURGAZ в Телеграм",
-                         url="https://t.me/surgazt")).add(
+                         url="https://t.me/surgaz")).add(
     InlineKeyboardButton("Вернуться в меню", callback_data="main"))
 
 cards = InlineKeyboardMarkup()
