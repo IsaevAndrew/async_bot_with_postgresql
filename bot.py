@@ -136,7 +136,7 @@ async def business(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -177,7 +177,7 @@ async def out_home(call: types.CallbackQuery):
 async def in_home(call: types.CallbackQuery):
     await call.message.answer(
         "Какие требования к краске?",
-        reply_markup=keyboards.quiz_out)
+        reply_markup=keyboards.quiz_in)
     await Quiz.next()
 
 
@@ -191,7 +191,8 @@ async def requirement_1(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Snefald.png'),
         caption=texts.snefald, parse_mode="HTML")
     await state.finish()
-    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!",
+                              reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(state=Quiz.requirements, text="2")
@@ -205,8 +206,8 @@ async def requirement_2(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Snefald.png'),
         caption=texts.snefald, parse_mode="HTML")
     await state.finish()
-    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
-
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!",
+                              reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(state=Quiz.requirements)
@@ -215,7 +216,7 @@ async def requirement_in(call: types.CallbackQuery, state: FSMContext):
         data["requirement_text"] = call.data
     await call.message.answer(
         "С какой степенью матовости Вы бы хотели приобрести краску?",
-        keyboards.matte)
+        reply_markup=keyboards.matte, parse_mode="HTML")
     await Quiz.next()
 
 
@@ -230,8 +231,8 @@ async def matte20(call: types.CallbackQuery, state: FSMContext):
         photo=types.InputFile('./photos/Shimmering sea.png'),
         caption=texts.shimmering_sea, parse_mode="HTML")
     await state.finish()
-    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
-
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!",
+                              reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="3")
@@ -259,8 +260,8 @@ async def matte3(call: types.CallbackQuery, state: FSMContext):
                 photo=types.InputFile('./photos/Aster.png'),
                 caption=texts.aster, parse_mode="HTML")
     await state.finish()
-    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
-
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!",
+                              reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="7")
@@ -298,8 +299,8 @@ async def matte7(call: types.CallbackQuery, state: FSMContext):
                 photo=types.InputFile('./photos/Klover.png'),
                 caption=texts.klover, parse_mode="HTML")
     await state.finish()
-    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!", reply_markup=keyboards.back_main)
-
+    await call.message.answer("Наш менеджер свяжется свами в ближайшее время!",
+                              reply_markup=keyboards.back_main)
 
 
 @dp.callback_query_handler(text="main_wallpaper")
@@ -317,7 +318,7 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -334,14 +335,13 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
-                                  reply_markup=keyboards.yes_no,
-                                  parse_mode="HTML")
-
+                                      reply_markup=keyboards.yes_no,
+                                      parse_mode="HTML")
 
 
 @dp.callback_query_handler(text="oboi_mobile")
@@ -352,7 +352,7 @@ async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -369,7 +369,8 @@ class Question(StatesGroup):
 
 @dp.callback_query_handler(text="oboi_question1")
 async def oboi_question1(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.")
+    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.",
+                              reply_markup=keyboards.back_main2)
     await Question.fio.set()
     async with state.proxy() as data:
         data["teg"] = "oboi_question1"
@@ -392,7 +393,7 @@ async def contact_handler(message: types.Message, state: FSMContext):
         data["phone"] = phone
     await message.answer(
         "Напишите пожалуйста ваш вопрос в произвольной форме.",
-        reply_markup=types.ReplyKeyboardRemove(),
+        reply_markup=keyboards.back_main2,
         parse_mode='HTML')
     await Question.next()
 
@@ -408,7 +409,7 @@ async def enter_phone(message: types.Message, state: FSMContext):
                 data["phone"] = phone
                 await message.answer(
                     "Напишите пожалуйста ваш вопрос в произвольной форме.",
-                    reply_markup=types.ReplyKeyboardRemove(),
+                    reply_markup=keyboards.back_main2,
                     parse_mode='HTML')
                 await Question.next()
         else:
@@ -421,7 +422,8 @@ async def enter_phone(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text="paint_question1")
 async def paint_question1(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.")
+    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.",
+                              reply_markup=keyboards.back_main2)
     await Question.fio.set()
     async with state.proxy() as data:
         data["teg"] = "paint_question1"
@@ -432,7 +434,7 @@ async def question_handler(message: types.Message, state: FSMContext):
     question = message.text
     await message.answer(
         "Персональный менеджер свяжется с Вами в течении 30 мин.",
-        reply_markup=keyboards.main)
+        reply_markup=keyboards.back_main2)
     await state.finish()
 
 
@@ -444,7 +446,7 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -467,7 +469,7 @@ async def pdf(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -493,7 +495,7 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
                                            session_maker=session_maker):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
-                reply_markup=keyboards.back_main)
+                reply_markup=keyboards.back_main2)
             # TODO передавать в crm
         else:
             await Consulting.agree.set()
@@ -511,9 +513,21 @@ async def no_agree(call: types.CallbackQuery, state: FSMContext):
     await state.finish()
 
 
+@dp.message_handler(state='*', text="Вернуться в меню")
+async def back_main(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("Вы будете возвращены в меню",
+                         reply_markup=types.ReplyKeyboardRemove())
+    await message.answer_video(video=videos["main"],
+                               caption=texts.welcome_message,
+                               reply_markup=keyboards.main,
+                               parse_mode="HTML")
+
+
 @dp.callback_query_handler(state=Consulting.agree, text="yes")
 async def yes_agree(call: types.CallbackQuery, state: FSMContext):
-    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.")
+    await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.",
+                              reply_markup=keyboards.back_main2)
     await Consulting.next()
 
 
@@ -541,7 +555,7 @@ async def contact_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data["phone"] = phone
     await message.answer("Введите Ваш e-mail для работы с нами",
-                         reply_markup=types.ReplyKeyboardRemove(),
+                         reply_markup=keyboards.back_main2,
                          parse_mode='HTML')
     await Consulting.next()
 
@@ -557,7 +571,7 @@ async def enter_phone(message: types.Message, state: FSMContext):
                 data["phone"] = phone
                 await message.answer(
                     "Введите Ваш e-mail для работы с нами",
-                    reply_markup=types.ReplyKeyboardRemove(),
+                    reply_markup=keyboards.back_main2,
                     parse_mode='HTML')
                 await Consulting.next()
         else:
@@ -590,7 +604,7 @@ async def city(message: types.Message, state: FSMContext):
                                data["city"], session_maker=session_maker)
     await message.answer(
         "Персональный менеджер свяжется с Вами в течении 30 мин.",
-        reply_markup=keyboards.back_main)
+        reply_markup=keyboards.back_main2)
     # TODO передавать в crm
     await state.finish()
 

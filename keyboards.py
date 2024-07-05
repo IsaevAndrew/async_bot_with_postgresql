@@ -57,6 +57,9 @@ retail.row(InlineKeyboardButton("Краски",
 back_main = InlineKeyboardMarkup()
 back_main.add(InlineKeyboardButton("Вернуться в меню", callback_data="main"))
 
+back_main2 = ReplyKeyboardMarkup()
+back_main2.add(KeyboardButton("Вернуться в меню"))
+
 paints_main = InlineKeyboardMarkup()
 paints_main.add(InlineKeyboardButton("Стать оптовым партнёром",
                                      callback_data="paint_partner")).add(
@@ -130,4 +133,4 @@ share_phone = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 share_phone.add(
     KeyboardButton(
         text="Отправить номер телефона привязанный к этому telegram аккаунту",
-        request_contact=True))
+        request_contact=True)).add(KeyboardButton("Вернуться в меню"))
