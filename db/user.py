@@ -19,6 +19,7 @@ class User(Base):
     city = Column(String(100), nullable=True, default='')  # Город
     is_registered = Column(Boolean, default=False)  # Зарегистрован
     agrees_to_video = Column(Boolean, default=False)  # Отсылать видео
+    webinar_registered = Column(Boolean, default=False)  # Зарегистрован на вебинар
 
 
 async def get_or_create_user(user_id: int, username: str,
@@ -87,6 +88,27 @@ async def update_agrees_to_video(user_id: int,
             if user:
                 user.agrees_to_video = True
                 await session.commit()
+
+
+async def update_webinar_registered(user_id: int,
+                                    session_maker: sessionmaker) -> None:
+    async with session_maker() as session:
+        async with session.begin():
+            stmt = select(User).where(User.user_id == user_id)
+            result = await session.execute(stmt)
+            user = result.scalars().first()
+            if user:
+                user.webinar_registered = True
+                await session.commit()
+
+
+async def get_users_webinar_registered(session_maker: sessionmaker) -> list:
+    async with session_maker() as session:
+        async with session.begin():
+            stmt = select(User.user_id, User.fio).where(User.webinar_registered == True)
+            result = await session.execute(stmt)
+            user_ids = [[user_id, fio] for (user_id, fio) in result.fetchall()]
+            return user_ids
 
 
 async def get_users_agreeing_to_video(session_maker: sessionmaker) -> list:

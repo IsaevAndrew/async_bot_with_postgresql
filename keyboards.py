@@ -129,6 +129,14 @@ cards.add(
     InlineKeyboardButton("Видео-формат", url="https://clck.ru/3ASBTX")).add(
     InlineKeyboardButton("PDF-формат", callback_data="pdf"))
 
+vk_link = InlineKeyboardMarkup()
+vk_link.add(InlineKeyboardButton("SURGAZ в VK", url="https://vk.com/surgaz"))
+
+join_link = InlineKeyboardMarkup()
+join_link.add(
+    InlineKeyboardButton("Присоединиться ВК", url="https://vk.com/surgaz")).add(
+    InlineKeyboardButton("Присоединиться YT", url="https://www.youtube.com"))
+
 share_phone = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 share_phone.add(
     KeyboardButton(

@@ -1,6 +1,8 @@
 import asyncio
 import re
+from datetime import datetime
 
+import aioschedule
 import phonenumbers
 from aiogram.types import InputFile, ContentType
 from pyrogram import Client, filters
@@ -20,7 +22,7 @@ from db.base import Base
 from db.engine import create_async_engine, get_session_maker, proceed_schema
 from db.user import User, get_or_create_user, update_user_info, \
     check_registration_status, check_agrees_to_video, update_agrees_to_video, \
-    get_users_agreeing_to_video
+    get_users_agreeing_to_video, get_users_webinar_registered, update_webinar_registered
 
 memory = MemoryStorage()
 bot = Bot(TOKEN)
@@ -37,10 +39,65 @@ async def init_db():
     await proceed_schema(async_engine, User.metadata)
 
 
+async def send_one_day_before():
+    users = await get_users_webinar_registered(session_maker=session_maker)
+    for user in users:
+        try:
+            await bot.send_photo(user[0], photo=InputFile("./photos/Aster.png"),
+                                 caption=f'Здравствуйте, {user[1]}!\n\nДо вебинара "[Тема вебинара]" остался всего один день! 🕒 Еще можно скорректировать свои планы, чтобы успеть на вебинар. \n\nЖдем вас [дата] в [время] по московскому времени. Мы подготовили для вас много интересного и полезного контента. Ссылка для участия: [Вставьте ссылку]. До встречи завтра!',
+                                 parse_mode="html")
+        except Exception as e:
+            print(e)
+
+
+async def send_one_hour_before():
+    users = await get_users_webinar_registered(session_maker=session_maker)
+    for user in users:
+        try:
+            await bot.send_message(user[0],
+                                   f'Здравствуйте, {user[1]}!\n\nНапоминаем, что наш вебинар: "[Тема вебинара]" начнется уже через час! ⏰ Приготовьте блокнот и ручку, чтобы записать важные моменты. Не забудьте перейти по ссылке ниже. \nДо встречи на вебинаре!',
+                                   parse_mode="html", reply_markup=keyboards.join_link)
+        except Exception as e:
+            print(e)
+
+
+async def send_five_minute_before():
+    users = await get_users_webinar_registered(session_maker=session_maker)
+    for user in users:
+        try:
+            await bot.send_message(user[0],
+                                   f'Здравствуйте, {user[1]}!\n\nВебинар: "[Тема вебинара]" уже начинается! 🚀 Самое время налить себе чашку кофе или чая и подготовиться к продуктивному часу.',
+                                   parse_mode="html", reply_markup=keyboards.join_link)
+        except Exception as e:
+            print(e)
+
+
+async def send_one_day_after():
+    users = await get_users_webinar_registered(session_maker=session_maker)
+    for user in users:
+        try:
+            await bot.send_message(user[0],
+                                   f'Здравствуйте!\n\nСпасибо всем, кто присоединился к нашему вебинару: "[Тема вебинара]"! Если вы пропустили трансляцию или хотите пересмотреть, у нас есть отличные новости — запись вебинара уже доступна в нашем сообществе в Контакте.\n\nМы надеемся, что вебинар был полезным. Если у вас возникнут вопросы или вам потребуется дополнительная информация, вы можете задать их вашему персональному менеджеру. До новых встреч на наших мероприятиях! 🚀\n\nВы можете посмотреть запись по этой ссылке: [Ссылка на запись вебинара].',
+                                   parse_mode="html")
+        except Exception as e:
+            print(e)
+
+
+async def sch():
+    aioschedule.every().thursday.at("").do(send_one_day_before)
+    aioschedule.every().thursday.at("").do(send_one_hour_before)
+    aioschedule.every().thursday.at("").do(send_five_minute_before)
+    aioschedule.every().thursday.at("").do(send_one_day_after)
+    while True:
+        await aioschedule.run_pending()
+        await asyncio.sleep(1)
+
+
 async def on_startup(_):
     await init_db()
     await app.start()
-    print("Бот успешно запущен!")
+    # asyncio.create_task(sch())
+    print("Бот успешно запущен!", datetime.now())
 
 
 @app.on_message(filters=filters.channel)
@@ -62,14 +119,25 @@ async def main_parser(client, message):
 
 
 @dp.message_handler(commands=['start'])
-async def welcome(message: types.Message):
+async def welcome(message: types.Message, state: FSMContext):
+    tag = ""
+    if " " in message.text:
+        tag = message.text.split()[-1]
     user_id = message.from_user.id
     name = message.from_user.username if message.from_user.username else '-'
     await get_or_create_user(user_id, name, session_maker=session_maker)
-    await message.answer_video(video=videos["main"],
-                               caption=texts.welcome_message,
-                               reply_markup=keyboards.main,
-                               parse_mode="HTML")
+    if not tag:
+        await message.answer_video(video=videos["main"],
+                                   caption=texts.welcome_message,
+                                   reply_markup=keyboards.main,
+                                   parse_mode="HTML")
+    elif tag == "webinar":
+        async with state.proxy() as data:
+            data["tag"] = tag
+        await Consulting.agree.set()
+        await message.answer(texts.webinar_start_message,
+                             reply_markup=keyboards.yes_no,
+                             parse_mode="HTML")
 
 
 @dp.callback_query_handler(text="main_retail")
@@ -602,15 +670,22 @@ async def city(message: types.Message, state: FSMContext):
         await update_user_info(message.from_user.id, data["fio"],
                                data["company"], data["phone"], data["email"],
                                data["city"], session_maker=session_maker)
-    await message.answer(
-        "Персональный менеджер свяжется с Вами в течении 30 мин.",
-        reply_markup=keyboards.back_main2)
-    # TODO передавать в crm
-    await state.finish()
+        if not data["tag"]:
+            await message.answer(
+                "Персональный менеджер свяжется с Вами в течении 30 мин.",
+                reply_markup=keyboards.back_main2)
+        else:
+            await message.answer(
+                f'Здравствуйте, {data["fio"]}!\nСпасибо, что проявили интерес к нашему вебинару: "". Этот чат-бот напомнит вам о предстоящем мероприятии. Чтобы наши сообщения не затерялись, закрепите этот чат вверху списка. Ближе к дате мы пришлем вам ссылку. \n\nДля комфортного просмотра вебинара и возможности задавать вопросы, подпишитесь на наше сообщество в Контакте.',
+                reply_markup=keyboards.vk_link)
+            await update_webinar_registered(user_id=message.chat.id,
+                                            session_maker=session_maker)
+        # TODO передавать в crm
+        await state.finish()
 
 
 @dp.message_handler(content_types=ContentType.ANY)
-async def back_main(message: types.Message):
+async def error(message: types.Message):
     print(message)
 
 
