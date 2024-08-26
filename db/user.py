@@ -118,3 +118,22 @@ async def get_users_agreeing_to_video(session_maker: sessionmaker) -> list:
             result = await session.execute(stmt)
             user_ids = [user_id for (user_id,) in result.fetchall()]
             return user_ids
+
+
+async def get_user_info(user_id: int, session_maker: sessionmaker) -> dict:
+    async with session_maker() as session:
+        async with session.begin():
+            stmt = select(User.fio, User.company, User.phone, User.email,
+                          User.city).where(User.user_id == user_id)
+            result = await session.execute(stmt)
+            user_info = result.first()
+            if user_info:
+                return {
+                    "fio": user_info.fio,
+                    "company": user_info.company,
+                    "phone": user_info.phone,
+                    "email": user_info.email,
+                    "city": user_info.city
+                }
+            else:
+                return None  # Пользователь с таким user_id не найден

@@ -22,13 +22,17 @@ from db.base import Base
 from db.engine import create_async_engine, get_session_maker, proceed_schema
 from db.user import User, get_or_create_user, update_user_info, \
     check_registration_status, check_agrees_to_video, update_agrees_to_video, \
-    get_users_agreeing_to_video, get_users_webinar_registered, update_webinar_registered
+    get_users_agreeing_to_video, get_users_webinar_registered, update_webinar_registered, \
+    get_user_info
 
 memory = MemoryStorage()
 bot = Bot(TOKEN)
 dp = Dispatcher(bot=bot, storage=memory)
 app = Client("SURGAZ", api_id=API_ID, api_hash=API_HASH)
 session_maker = None
+import requests
+
+url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
 
 
 async def init_db():
@@ -205,7 +209,20 @@ async def business(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -387,7 +404,19 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -404,7 +433,20 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -421,7 +463,20 @@ async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -515,7 +570,20 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -538,7 +606,20 @@ async def pdf(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -564,7 +645,20 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
-            # TODO передавать в crm
+            user_info = await get_user_info(call.message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": call.message.chat.id,
+                    "username": call.message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg']
+                }
+                requests.post(url, data=info)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -670,7 +764,7 @@ async def city(message: types.Message, state: FSMContext):
         await update_user_info(message.from_user.id, data["fio"],
                                data["company"], data["phone"], data["email"],
                                data["city"], session_maker=session_maker)
-        if not data["tag"]:
+        if not data.get("tag"):
             await message.answer(
                 "Персональный менеджер свяжется с Вами в течении 30 мин.",
                 reply_markup=keyboards.back_main2)
@@ -680,7 +774,21 @@ async def city(message: types.Message, state: FSMContext):
                 reply_markup=keyboards.vk_link)
             await update_webinar_registered(user_id=message.chat.id,
                                             session_maker=session_maker)
-        # TODO передавать в crm
+        if not data.get("business"):
+            data["business"] = data["tag"] if data.get("tag") else ''
+        info = {
+            "user_id": message.chat.id,
+            "username": message.chat.username,
+            "fio": data['fio'],
+            "company": data['company'],
+            "phone": data['phone'],
+            "email": data['email'],
+            "city": data['city'],
+            "comment": data["business"],
+            "teg": data['teg']
+        }
+        request = requests.post(url, data=info)
+        print(request.text)
         await state.finish()
 
 
