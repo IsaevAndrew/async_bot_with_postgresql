@@ -1,6 +1,7 @@
 import asyncio
 import re
 from datetime import datetime
+from urllib.parse import urlencode
 
 import aioschedule
 import phonenumbers
@@ -222,7 +223,9 @@ async def business(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -416,7 +419,9 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
                     "city": user_info["city"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -446,7 +451,9 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -476,7 +483,9 @@ async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -583,7 +592,9 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -619,7 +630,9 @@ async def pdf(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
@@ -658,7 +671,9 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
                     "comment": data["business"],
                     "teg": data['teg']
                 }
-                requests.post(url, data=info)
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
         else:
             await Consulting.agree.set()
             await call.message.answer(texts.consultation_message,
