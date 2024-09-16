@@ -6,6 +6,9 @@ API_HASH = os.getenv('API_HASH')
 HYGGE_PAINT_CHANNEL = int(os.getenv('HYGGE_PAINT_CHANNEL'))
 SURGAZ_CHANNEL = int(os.getenv('SURGAZ_CHANNEL'))
 ARTSIMPLE_CHANNEL = int(os.getenv('ARTSIMPLE_CHANNEL'))
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_NAME = os.getenv('DB_ANME')
 videos = {
     "paint": "BAACAgIAAxkBAAMLZnsrO8fhLXTaVS2h4yhgi8CDTAEAAkVMAAKP5tlLmTh6X2_eSkU1BA",
     "wallpaper": "BAACAgIAAxkBAAICU2bQ4thTJiTdXLxUhrY4uemIoA-PAAJKUQACekOJShsKjCsmza-ONQQ",

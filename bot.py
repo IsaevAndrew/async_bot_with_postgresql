@@ -13,6 +13,8 @@ from consts import API_ID, API_HASH, HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL, \
 
 from consts import TOKEN, videos
 
+from consts import DB_USER, DB_PASSWORD, DB_NAME
+
 from aiogram import Dispatcher, executor, types, Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -37,7 +39,8 @@ url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
 
 
 async def init_db():
-    DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
+    #DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
+    DATABASE_URL = "postgresql+asyncpg://"+DB_USER+":"+DB_PASSWORD+"@db/"+DB_NAME
     async_engine = create_async_engine(DATABASE_URL)
     global session_maker
     session_maker = get_session_maker(async_engine)
