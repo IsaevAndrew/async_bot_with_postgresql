@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM python:latest
+FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /code
 RUN chown -Rh $user:$user /code
