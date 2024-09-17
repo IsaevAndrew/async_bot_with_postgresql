@@ -1,14 +1,14 @@
 from .base import Base
 from sqlalchemy.orm import sessionmaker, selectinload
 
-from sqlalchemy import Column, Integer, String, Boolean, Date, select
+from sqlalchemy import Column, Integer, String, Boolean, Date, select, BIGINT
 import datetime
 
 
 class User(Base):
     __tablename__ = 'users'
 
-    user_id = Column(Integer, unique=True, primary_key=True)  # ТГ id
+    user_id = Column(BIGINT, unique=True, primary_key=True)  # ТГ id
     username = Column(String(64), nullable=True)  # ТГ ник
     start_date = Column(Date, default=datetime.date.today)  # Дата
     fio = Column(String(255), nullable=True, default='')  # ФИО пользователя
