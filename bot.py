@@ -39,8 +39,8 @@ url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
 
 
 async def init_db():
-    #DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
-    DATABASE_URL = "postgresql+asyncpg://"+DB_USER+":"+DB_PASSWORD+"@"+DB_HOST+"/"+DB_NAME
+    # DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
+    DATABASE_URL = "postgresql+asyncpg://" + DB_USER + ":" + DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME
     async_engine = create_async_engine(DATABASE_URL)
     global session_maker
     session_maker = get_session_maker(async_engine)
@@ -150,6 +150,9 @@ async def welcome(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text="main_retail")
 async def retail(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer(texts.retail_message,
                               reply_markup=keyboards.retail,
                               parse_mode="HTML")
@@ -157,6 +160,9 @@ async def retail(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="main")
 async def main_callback(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer_video(video=videos["main"],
                                     caption=texts.welcome_message,
                                     reply_markup=keyboards.main,
@@ -173,6 +179,9 @@ async def get_last_video():
 
 @dp.callback_query_handler(text="new_videos")
 async def new_videos(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     if not await check_agrees_to_video(call.message.chat.id,
                                        session_maker=session_maker):
         await update_agrees_to_video(user_id=call.message.chat.id,
@@ -187,6 +196,9 @@ async def new_videos(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="partner")
 async def partner(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer_video(video=videos["main"],
                                     caption=texts.partner_message,
                                     reply_markup=keyboards.partner,
@@ -198,6 +210,9 @@ async def partner(call: types.CallbackQuery):
                                "business4", "business5", "business6",
                                "business7"])
 async def business(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "partner"
         business = {"business1": "Торговля обоями",
@@ -238,6 +253,9 @@ async def business(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="main_paints")
 async def main_paints(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer_video(video=videos["paint"],
                                     reply_markup=keyboards.paints_main,
                                     parse_mode="HTML")
@@ -251,6 +269,9 @@ class Quiz(StatesGroup):
 
 @dp.callback_query_handler(text="quiz")
 async def quiz(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer(texts.quiz_message, parse_mode="HTML",
                               reply_markup=keyboards.quiz_first)
     await Quiz.what.set()
@@ -258,6 +279,9 @@ async def quiz(call: types.CallbackQuery):
 
 @dp.callback_query_handler(state=Quiz.what, text="out")
 async def out_home(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer(
         "Какие требования к фасадной матовой краске с 7% блеска?",
         reply_markup=keyboards.quiz_out)
@@ -266,6 +290,9 @@ async def out_home(call: types.CallbackQuery):
 
 @dp.callback_query_handler(state=Quiz.what, text="in")
 async def in_home(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer(
         "Какие требования к краске?",
         reply_markup=keyboards.quiz_in)
@@ -274,6 +301,9 @@ async def in_home(call: types.CallbackQuery):
 
 @dp.callback_query_handler(state=Quiz.requirements, text="1")
 async def requirement_1(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Вам подходят краски:")
     await call.message.answer_photo(
         photo=types.InputFile("./photos/Sapphire.png"),
@@ -288,6 +318,9 @@ async def requirement_1(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Quiz.requirements, text="2")
 async def requirement_2(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Вам больше всего подходит краска:")
     await call.message.answer_photo(
         photo=types.InputFile("./photos/Sapphire.png"),
@@ -303,6 +336,9 @@ async def requirement_2(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Quiz.requirements)
 async def requirement_in(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["requirement_text"] = call.data
     await call.message.answer(
@@ -313,6 +349,9 @@ async def requirement_in(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Quiz.matte, text="20")
 async def matte20(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Вам больше всего подходит краска:")
     await call.message.answer_photo(
         photo=types.InputFile('./photos/Snefald.png'),
@@ -328,6 +367,9 @@ async def matte20(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Quiz.matte, text="3")
 async def matte3(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         if data["requirement_text"] in ["metal", "wood", "dry"]:
             await call.message.answer("Вам больше всего подходят краски:")
@@ -357,6 +399,9 @@ async def matte3(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=Quiz.matte, text="7")
 async def matte7(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         if data["requirement_text"] == "dry":
             await call.message.answer("Вам больше всего подходят краски:")
@@ -396,6 +441,9 @@ async def matte7(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="main_wallpaper")
 async def main_wallpaper(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer_video(video=videos["wallpaper"],
                                     reply_markup=keyboards.wallpapers_main,
                                     parse_mode="HTML")
@@ -403,6 +451,9 @@ async def main_wallpaper(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="oboi_partner")
 async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "oboi_partner"
         if await check_registration_status(call.message.chat.id,
@@ -434,6 +485,9 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="oboi_katalog")
 async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "oboi_katalog"
         if await check_registration_status(call.message.chat.id,
@@ -466,6 +520,9 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="oboi_mobile")
 async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "oboi_mobile"
         if await check_registration_status(call.message.chat.id,
@@ -504,6 +561,9 @@ class Question(StatesGroup):
 
 @dp.callback_query_handler(text="oboi_question1")
 async def oboi_question1(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.",
                               reply_markup=keyboards.back_main2)
     await Question.fio.set()
@@ -513,6 +573,9 @@ async def oboi_question1(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=Question.fio)
 async def company(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["fio"] = message.text
     await message.answer("Введите Ваш действующий номер телефона через +",
@@ -523,6 +586,9 @@ async def company(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Question.phone,
                     content_types=types.ContentType.CONTACT)
 async def contact_handler(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     phone = message.contact.phone_number
     async with state.proxy() as data:
         data["phone"] = phone
@@ -535,6 +601,9 @@ async def contact_handler(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=Question.phone)
 async def enter_phone(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     phone = message.text
     try:
         _phone = ''.join(filter(str.isdigit, phone))
@@ -557,6 +626,9 @@ async def enter_phone(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text="paint_question1")
 async def paint_question1(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Введите, пожалуйста, Ваше Ф.И.О.",
                               reply_markup=keyboards.back_main2)
     await Question.fio.set()
@@ -566,15 +638,45 @@ async def paint_question1(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=Question.question)
 async def question_handler(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     question = message.text
-    await message.answer(
-        "Персональный менеджер свяжется с Вами в течении 30 мин.",
-        reply_markup=keyboards.back_main2)
-    await state.finish()
+    async with state.proxy() as data:
+        if await check_registration_status(message.chat.id,
+                                           session_maker=session_maker):
+            await message.answer(
+                "Персональный менеджер свяжется с Вами в течении 30 мин.",
+                reply_markup=keyboards.back_main2)
+            user_info = await get_user_info(message.chat.id, session_maker)
+            if user_info:
+                info = {
+                    "user_id": message.chat.id,
+                    "username": message.chat.username,
+                    "fio": user_info["fio"],
+                    "company": user_info["company"],
+                    "phone": user_info["phone"],
+                    "email": user_info["email"],
+                    "city": user_info["city"],
+                    "comment": data["business"],
+                    "teg": data['teg'],
+                    "question": question
+                }
+                query_string = urlencode(info)
+                full_url = f"{url}?{query_string}"
+                requests.get(full_url)
+        else:
+            await Consulting.agree.set()
+            await message.answer(texts.consultation_message,
+                                 reply_markup=keyboards.yes_no,
+                                 parse_mode="HTML")
 
 
 @dp.callback_query_handler(text="paint_engining")
 async def paint_engining(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "paint_engining"
         if await check_registration_status(call.message.chat.id,
@@ -607,12 +709,18 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="cards")
 async def cards(call: types.CallbackQuery):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await call.message.answer("Технические карты маляра",
                               reply_markup=keyboards.cards)
 
 
 @dp.callback_query_handler(text="pdf")
 async def pdf(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "paint_partner"
         if await check_registration_status(call.message.chat.id,
@@ -654,6 +762,9 @@ class Consulting(StatesGroup):
 
 @dp.callback_query_handler(text="paint_partner")
 async def paint_partner(call: types.CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    name = call.message.from_user.username if call.message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["teg"] = "paint_partner"
         if await check_registration_status(call.message.chat.id,
@@ -695,6 +806,9 @@ async def no_agree(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state='*', text="Вернуться в меню")
 async def back_main(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     await state.finish()
     await message.answer("Вы будете возвращены в меню",
                          reply_markup=types.ReplyKeyboardRemove())
@@ -713,6 +827,9 @@ async def yes_agree(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=Consulting.fio)
 async def fio(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     async with state.proxy() as data:
         data["fio"] = message.text
     await message.answer("Введите название Вашей организации")
@@ -812,6 +929,9 @@ async def city(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=ContentType.ANY)
 async def error(message: types.Message):
+    user_id = message.from_user.id
+    name = message.from_user.username if message.from_user.username else '-'
+    await get_or_create_user(user_id, name, session_maker=session_maker)
     print(message)
 
 
