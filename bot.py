@@ -36,6 +36,7 @@ session_maker = None
 import requests
 
 url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
+url_for_update = "https://portal.surgaz.ru//local/crmbot/crmdealupdate.php"
 
 
 async def init_db():
@@ -232,17 +233,11 @@ async def business(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -465,16 +460,10 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -499,17 +488,11 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -534,17 +517,11 @@ async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -643,6 +620,7 @@ async def question_handler(message: types.Message, state: FSMContext):
     await get_or_create_user(user_id, name, session_maker=session_maker)
     question = message.text
     async with state.proxy() as data:
+        data["question"] = question
         if await check_registration_status(message.chat.id,
                                            session_maker=session_maker):
             await message.answer(
@@ -652,18 +630,12 @@ async def question_handler(message: types.Message, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": message.chat.id,
-                    "username": message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg'],
                     "question": question
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -688,17 +660,11 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -732,17 +698,11 @@ async def pdf(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -776,17 +736,11 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
             if user_info:
                 info = {
                     "user_id": call.message.chat.id,
-                    "username": call.message.chat.username,
-                    "fio": user_info["fio"],
-                    "company": user_info["company"],
-                    "phone": user_info["phone"],
-                    "email": user_info["email"],
-                    "city": user_info["city"],
                     "comment": data["business"],
                     "teg": data['teg']
                 }
                 query_string = urlencode(info)
-                full_url = f"{url}?{query_string}"
+                full_url = f"{url_for_update}?{query_string}"
                 requests.get(full_url)
         else:
             await Consulting.agree.set()
@@ -911,19 +865,24 @@ async def city(message: types.Message, state: FSMContext):
                                             session_maker=session_maker)
         if not data.get("business"):
             data["business"] = data["tag"] if data.get("tag") else ''
-        info = {
-            "user_id": message.chat.id,
-            "username": message.chat.username,
-            "fio": data['fio'],
-            "company": data['company'],
-            "phone": data['phone'],
-            "email": data['email'],
-            "city": data['city'],
-            "comment": data["business"],
-            "teg": data['teg']
-        }
-        request = requests.post(url, data=info)
-        print(request.text)
+        data["question"] = data["question"] if data.get("question") else ''
+        user_info = await get_user_info(message.chat.id, session_maker)
+        if user_info:
+            info = {
+                "user_id": message.chat.id,
+                "username": message.chat.username,
+                "fio": user_info["fio"],
+                "company": user_info["company"],
+                "phone": user_info["phone"],
+                "email": user_info["email"],
+                "city": user_info["city"],
+                "comment": data["business"],
+                "teg": data['teg'],
+                "question": data["question"]
+            }
+            query_string = urlencode(info)
+            full_url = f"{url}?{query_string}"
+            requests.get(full_url)
         await state.finish()
 
 
