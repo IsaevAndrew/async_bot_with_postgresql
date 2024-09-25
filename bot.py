@@ -13,7 +13,7 @@ from consts import API_ID, API_HASH, HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL, \
 
 from consts import TOKEN, videos
 
-# from consts import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+from consts import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 
 from aiogram import Dispatcher, executor, types, Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -36,12 +36,12 @@ session_maker = None
 import requests
 
 url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
-url_for_update = "https://portal.surgaz.ru//local/crmbot/crmdealupdate.php"
+url_for_update = "https://portal.surgaz.ru/local/crmbot/crmdealupdate.php"
 
 
 async def init_db():
-    DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
-    # DATABASE_URL = "postgresql+asyncpg://" + DB_USER + ":" + DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME
+    # DATABASE_URL = "postgresql+asyncpg://user:password@db/botdb"
+    DATABASE_URL = "postgresql+asyncpg://" + DB_USER + ":" + DB_PASSWORD + "@" + DB_HOST + "/" + DB_NAME
     async_engine = create_async_engine(DATABASE_URL)
     global session_maker
     session_maker = get_session_maker(async_engine)
@@ -817,7 +817,7 @@ async def city(message: types.Message, state: FSMContext):
                 "teg": data['teg'],
                 "question": data["question"]
             }
-            requests.post(url, json=info)
+            requests.post(url, data=info)
         await state.finish()
 
 

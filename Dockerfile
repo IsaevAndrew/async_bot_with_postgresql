@@ -14,8 +14,7 @@ COPY requirements.txt /code/
 
 RUN apt update && apt -y install curl \
     && apt -y install python3 \
-    && apt-get -y install python3-pip \
-    && apt-get -y install redis-server
+    && apt-get -y install python3-pip
 
 RUN pip install -r requirements.txt
 
