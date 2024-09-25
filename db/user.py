@@ -22,7 +22,7 @@ class User(Base):
     webinar_registered = Column(Boolean, default=False)  # Зарегистрован на вебинар
 
 
-async def get_or_create_user(user_id: int, username: str,
+async def get_or_create_user(user_id, username: str,
                              session_maker: sessionmaker) -> None:
     async with session_maker() as session:
         async with session.begin():
