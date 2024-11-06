@@ -6,11 +6,12 @@ import aioschedule
 import phonenumbers
 from aiogram.types import InputFile, ContentType
 from pyrogram import Client, filters
+import traceback
+import os
 
 from consts import API_ID, API_HASH, HYGGE_PAINT_CHANNEL, SURGAZ_CHANNEL, \
-    ARTSIMPLE_CHANNEL
-
-from consts import TOKEN, videos
+    ARTSIMPLE_CHANNEL, url, url_for_update, LOG_FILE, TOKEN, videos, \
+    ERRORS_CHAT_ID, SEND_LOG_FILE, ADMIN_ID
 
 from consts import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 import requests
@@ -34,11 +35,34 @@ dp = Dispatcher(bot=bot, storage=memory)
 app = Client("SURGAZ", api_id=API_ID, api_hash=API_HASH)
 session_maker = None
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
 
-url = "https://portal.surgaz.ru/local/crmbot/crmbot.php"
-url_for_update = "https://portal.surgaz.ru/local/crmbot/crmdealupdate.php"
+
+async def log_and_send_error(context, exception):
+    error_message = (
+        f"Error Context: {context}\n"
+        f"Error Type: {type(exception).__name__}\n"
+        f"Error Message: {exception}\n"
+    )
+    traceback = f"Traceback: {get_traceback_info()}"
+    logger.error(error_message + traceback)
+    with open(SEND_LOG_FILE, 'w') as log_file:
+        log_file.write(error_message + traceback)
+    await bot.send_document(ERRORS_CHAT_ID, InputFile(SEND_LOG_FILE),
+                            caption=error_message)
+    os.remove(SEND_LOG_FILE)
+
+
+def get_traceback_info():
+    return str(traceback.format_exc())
 
 
 async def init_db():
@@ -50,7 +74,7 @@ async def init_db():
         session_maker = get_session_maker(async_engine)
         await proceed_schema(async_engine, User.metadata)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка при инициализации базы данных", e)
 
 
 async def send_one_day_before():
@@ -63,9 +87,9 @@ async def send_one_day_before():
                                      caption=f'Здравствуйте, {user[1]}!\n\nДо вебинара "[Тема вебинара]" остался всего один день! 🕒 Еще можно скорректировать свои планы, чтобы успеть на вебинар. \n\nЖдем вас [дата] в [время] по московскому времени. Мы подготовили для вас много интересного и полезного контента. Ссылка для участия: [Вставьте ссылку]. До встречи завтра!',
                                      parse_mode="html")
             except Exception as e:
-                print(e)
+                await log_and_send_error("Ошибка в работе бота", e)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def send_one_hour_before():
@@ -78,9 +102,9 @@ async def send_one_hour_before():
                                        parse_mode="html",
                                        reply_markup=keyboards.join_link)
             except Exception as e:
-                print(e)
+                await log_and_send_error("Ошибка в работе бота", e)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def send_five_minute_before():
@@ -93,9 +117,9 @@ async def send_five_minute_before():
                                        parse_mode="html",
                                        reply_markup=keyboards.join_link)
             except Exception as e:
-                print(e)
+                await log_and_send_error("Ошибка в работе бота", e)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def send_one_day_after():
@@ -107,9 +131,9 @@ async def send_one_day_after():
                                        f'Здравствуйте!\n\nСпасибо всем, кто присоединился к нашему вебинару: "[Тема вебинара]"! Если вы пропустили трансляцию или хотите пересмотреть, у нас есть отличные новости — запись вебинара уже доступна в нашем сообществе в Контакте.\n\nМы надеемся, что вебинар был полезным. Если у вас возникнут вопросы или вам потребуется дополнительная информация, вы можете задать их вашему персональному менеджеру. До новых встреч на наших мероприятиях! 🚀\n\nВы можете посмотреть запись по этой ссылке: [Ссылка на запись вебинара].',
                                        parse_mode="HTML")
             except Exception as e:
-                print(e)
+                await log_and_send_error("Ошибка в работе бота", e)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def sch():
@@ -122,7 +146,7 @@ async def sch():
             await aioschedule.run_pending()
             await asyncio.sleep(1)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def on_startup(_):
@@ -130,9 +154,11 @@ async def on_startup(_):
         await init_db()
         await app.start()
         # asyncio.create_task(sch())
-        print("Бот успешно запущен!" + str(datetime.now()))
+        startup_message = f"Бот успешно запущен! Время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        logger.info(startup_message)
+        await bot.send_message(ERRORS_CHAT_ID, startup_message)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка при запуске бота", e)
 
 
 @app.on_message(filters=filters.channel)
@@ -149,11 +175,11 @@ async def main_parser(client, message):
                         await bot.forward_message(user, message.chat.id,
                                                   message.id)
                     except Exception as e:
-                        print(e)
+                        await log_and_send_error("Ошибка в работе бота", e)
         else:
             return
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(commands=['start'])
@@ -178,7 +204,13 @@ async def welcome(message: types.Message, state: FSMContext):
                                  reply_markup=keyboards.yes_no,
                                  parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
+
+
+@dp.message_handler(commands=['check'])
+async def check(message: types.Message):
+    if message.chat.id == ADMIN_ID:
+        await message.answer("STABLE")
 
 
 @dp.callback_query_handler(text="main_retail")
@@ -191,7 +223,7 @@ async def retail(call: types.CallbackQuery):
                                   reply_markup=keyboards.retail,
                                   parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="main")
@@ -205,7 +237,7 @@ async def main_callback(call: types.CallbackQuery):
                                         reply_markup=keyboards.main,
                                         parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 async def get_last_video():
@@ -216,7 +248,7 @@ async def get_last_video():
                 if post.video and post.caption and "#surgaz_видео" in post.caption:
                     return post.id
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="new_videos")
@@ -236,7 +268,7 @@ async def new_videos(call: types.CallbackQuery):
         await call.message.answer(texts.videos, reply_markup=keyboards.videos,
                                   parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="partner")
@@ -250,7 +282,7 @@ async def partner(call: types.CallbackQuery):
                                         reply_markup=keyboards.partner,
                                         parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(
@@ -294,7 +326,7 @@ async def business(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="main_paints")
@@ -307,7 +339,7 @@ async def main_paints(call: types.CallbackQuery):
                                         reply_markup=keyboards.paints_main,
                                         parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 class Quiz(StatesGroup):
@@ -326,7 +358,7 @@ async def quiz(call: types.CallbackQuery):
                                   reply_markup=keyboards.quiz_first)
         await Quiz.what.set()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.what, text="out")
@@ -340,7 +372,7 @@ async def out_home(call: types.CallbackQuery):
             reply_markup=keyboards.quiz_out)
         await Quiz.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.what, text="in")
@@ -354,7 +386,7 @@ async def in_home(call: types.CallbackQuery):
             reply_markup=keyboards.quiz_in)
         await Quiz.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.requirements, text="1")
@@ -375,7 +407,7 @@ async def requirement_1(call: types.CallbackQuery, state: FSMContext):
             "Наш менеджер свяжется свами в ближайшее время!",
             reply_markup=keyboards.back_main)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.requirements, text="2")
@@ -397,7 +429,7 @@ async def requirement_2(call: types.CallbackQuery, state: FSMContext):
             "Наш менеджер свяжется свами в ближайшее время!",
             reply_markup=keyboards.back_main)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.requirements)
@@ -413,7 +445,7 @@ async def requirement_in(call: types.CallbackQuery, state: FSMContext):
             reply_markup=keyboards.matte, parse_mode="HTML")
         await Quiz.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="20")
@@ -435,7 +467,7 @@ async def matte20(call: types.CallbackQuery, state: FSMContext):
             "Наш менеджер свяжется свами в ближайшее время!",
             reply_markup=keyboards.back_main)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="3")
@@ -471,7 +503,7 @@ async def matte3(call: types.CallbackQuery, state: FSMContext):
             "Наш менеджер свяжется свами в ближайшее время!",
             reply_markup=keyboards.back_main)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Quiz.matte, text="7")
@@ -517,7 +549,7 @@ async def matte7(call: types.CallbackQuery, state: FSMContext):
             "Наш менеджер свяжется свами в ближайшее время!",
             reply_markup=keyboards.back_main)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="main_wallpaper")
@@ -530,7 +562,7 @@ async def main_wallpaper(call: types.CallbackQuery):
                                         reply_markup=keyboards.wallpapers_main,
                                         parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="oboi_partner")
@@ -560,7 +592,7 @@ async def oboi_partner(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="oboi_katalog")
@@ -593,7 +625,7 @@ async def oboi_katalog(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="oboi_mobile")
@@ -626,7 +658,7 @@ async def oboi_mobile(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 class Question(StatesGroup):
@@ -646,7 +678,7 @@ async def oboi_question1(call: types.CallbackQuery, state: FSMContext):
         async with state.proxy() as data:
             data["teg"] = "oboi_question1"
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="paint_question1")
@@ -662,7 +694,7 @@ async def paint_question1(call: types.CallbackQuery, state: FSMContext):
         async with state.proxy() as data:
             data["teg"] = "paint_question1"
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Question.question)
@@ -697,7 +729,7 @@ async def question_handler(message: types.Message, state: FSMContext):
                                      reply_markup=keyboards.yes_no,
                                      parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="paint_engining")
@@ -730,7 +762,7 @@ async def paint_engining(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="cards")
@@ -742,7 +774,7 @@ async def cards(call: types.CallbackQuery):
         await call.message.answer("Технические карты маляра",
                                   reply_markup=keyboards.cards)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(text="pdf")
@@ -775,7 +807,7 @@ async def pdf(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 class Consulting(StatesGroup):
@@ -817,7 +849,7 @@ async def paint_partner(call: types.CallbackQuery, state: FSMContext):
                                           reply_markup=keyboards.yes_no,
                                           parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Consulting.agree, text="no")
@@ -829,7 +861,7 @@ async def no_agree(call: types.CallbackQuery, state: FSMContext):
                                         parse_mode="HTML")
         await state.finish()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state='*', text="Вернуться в меню")
@@ -846,7 +878,7 @@ async def back_main(message: types.Message, state: FSMContext):
                                    reply_markup=keyboards.main,
                                    parse_mode="HTML")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.callback_query_handler(state=Consulting.agree, text="yes")
@@ -856,7 +888,7 @@ async def yes_agree(call: types.CallbackQuery, state: FSMContext):
                                   reply_markup=keyboards.back_main2)
         await Consulting.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.fio)
@@ -870,7 +902,7 @@ async def fio(message: types.Message, state: FSMContext):
         await message.answer("Введите название Вашей организации")
         await Consulting.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.company)
@@ -882,7 +914,7 @@ async def company(message: types.Message, state: FSMContext):
                              reply_markup=keyboards.share_phone)
         await Consulting.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.phone,
@@ -897,7 +929,7 @@ async def contact_handler(message: types.Message, state: FSMContext):
                              parse_mode='HTML')
         await Consulting.next()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.phone)
@@ -922,7 +954,7 @@ async def enter_phone(message: types.Message, state: FSMContext):
             await message.answer(
                 "Некорректный формат телефонного номера. Пожалуйста, введите корректный номер.")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.email)
@@ -938,7 +970,7 @@ async def city(message: types.Message, state: FSMContext):
             await message.answer(
                 "Некорректный формат адреса почты. Пожалуйста, введите корректный адрес почты.")
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(state=Consulting.city)
@@ -980,7 +1012,7 @@ async def city(message: types.Message, state: FSMContext):
                 requests.post(url, data=info)
             await state.finish()
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
 
 
 @dp.message_handler(content_types=ContentType.ANY)
@@ -989,10 +1021,19 @@ async def error(message: types.Message):
         user_id = message.chat.id
         name = message.chat.username if message.chat.username else '-'
         await get_or_create_user(user_id, name, session_maker=session_maker)
-        print(message)
     except Exception as e:
-        print(e)
+        await log_and_send_error("Ошибка в работе бота", e)
+
+
+@dp.errors_handler()
+async def handle_errors(update, exception):
+    await log_and_send_error("Возникла ошибка в обработке", exception)
+    return True
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
+    try:
+        logger.info("Запуск бота")
+        executor.start_polling(dp, on_startup=on_startup, skip_updates=True)
+    except Exception as e:
+        asyncio.run(log_and_send_error("Ошибка при запуске", e))
